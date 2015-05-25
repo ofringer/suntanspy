@@ -3,9 +3,17 @@ Extensions to the wonderful Pandas module
 """
 
 import pandas as pd
+from pandas import TimeSeries
 from scipy import signal
 import numpy as np
 
+import othertime
+
+import pdb
+
+#########################
+# Utility functions
+#########################
 def godin(phi):
     """
     Godin type filter of a time series
@@ -41,6 +49,18 @@ def butterfilt(phi,cutoff_dt,btype='low',order=3):
 
     return phi_filt
  
+def subsample(phi, sample_dt):
+    """
+    Resamples the data at window dt
+
+    Computes moving average first 
+    """
+    dt = get_dt(phi)
+    window = sample_dt//dt
+    phi_mean = pd.rolling_mean(phi,window)
+    return phi_mean[::window]
+
+
 def rms(phi,cutoff_dt):
     """
     rolling rms
@@ -58,6 +78,104 @@ def get_dt(phi):
     else:
         time = phi.index
 
-    jdate = time.to_julian_date()*86400.
-    return jdate[1]-jdate[0]
+    dt = time[1]-time[0]
+    return dt.total_seconds()
+    #jdate = time.to_julian_date()*86400.
+    #return jdate[1]-jdate[0]
+
+############################
+# Extension classes
+############################
+class MetaData(object):
+
+    units = None
+    long_name = None
+    stationid = None
+    stationname = None
+    height = None
+    longitude = None
+    latitude = None
+
+
+    def __init__(self,**kwargs):
+	"""
+	Class for storing metadata for a TimeSeries object
+	"""
+        self.update(**kwargs)
+     
+    def update(self,**kwargs):
+        self.__dict__.update(kwargs)
+    
+
+class ObsTimeSeries(TimeSeries):
+
+    baseyear = 2000
+    has_metadata = False
+
+    def __init__(self, data, dtime,**kwargs):
+	"""
+	Time series w/ specific IO methods
+	"""
+        self.__dict__.update(kwargs)
+
+        TimeSeries.__init__(self, data, index=dtime)
+	#super(ObsTimeSeries,self).__init__(data,index=dtime)
+
+	# Time coordinates
+	self.nt = self.index.shape
+	self.tsec = othertime.SecondsSince(self.index,\
+		basetime = pd.datetime(self.baseyear,1,1))
+
+    def __new__(cls, *args, **kwargs):
+        arr = pd.TimeSeries.__new__(cls, *args, **kwargs)
+        return arr.view(ObsTimeSeries)
+
+    def interp(self, other):
+	"""
+	Interpolate onto another time series
+        """
+        return self.interpolate()[other.index]
+
+    def set_metadata(self, **kwargs):
+	"""Quickly sets the metadata"""
+
+	if self.has_metadata:
+	    self.metadata.update(**kwargs)
+	else:
+	    self.metadata = MetaData(**kwargs)
+
+        self.has_metadata = True
+
+    def to_nc4(self, ncfile, varname, groupid=None):
+	"""
+	
+  	"""
+ 	# Open the file
+	try:
+	     nc = Dataset(ncfile, mode='w', clobber=False)
+	except:
+	     # File must exist
+	     nc = Dataset(ncfile, mode='a')
+	
+	# Create the group 
+        if groupid == None:
+	    grp = nc
+	else:
+	    if groupid in nc.groups.keys():
+		grp = nc.groups[groupid]
+	    else:
+		grp = nc.createGroup(groupid)
+        
+	# Create the time dimension (unlimited)
+        if not 'time' in grp.dimensions.keys():
+	    grp.createDimension('time',0)
+                
+	    # Create the coordinate variables
+	    tmpvar=grp.createVariable('time','f8',('time',))
+	    tmpvar[:] = self.tsec
+
+	## Create the attributes
+	#for aa in cc.keys():
+	#    if aa !='Name' and aa !='Value':
+	#	tmpvar.setncattr(aa,cc[aa]) 
 
