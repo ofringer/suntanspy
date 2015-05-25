@@ -124,7 +124,7 @@ class GridDAP(object):
                 self.y2 = max([y1,y2])
         
         elif self.X.ndim==2:
-            if xrange or yrange == None:
+            if xrange == None or yrange == None:
                 self.x1 = 0
                 self.x2 = self.X.shape[1]
                 self.y1 = 0

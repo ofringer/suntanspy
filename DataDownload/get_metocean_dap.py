@@ -121,7 +121,7 @@ class GFSFiles:
 # Main functions for calling
 ##############################
 def get_metocean_dap(xrange,yrange,zrange,trange,outfile,\
-        gridfile=None,name='HYCOM'):
+        gridfile=None,name='HYCOM',**kwargs):
     """
     Extracts any met-ocean model that doesn't have server specific needs
 
@@ -133,6 +133,9 @@ def get_metocean_dap(xrange,yrange,zrange,trange,outfile,\
             ['20101201.000000','20101202.000000']
     """
     oceandict=metoceandict[name]
+
+    for key in kwargs.keys():
+        oceandict[key]=kwargs[key]
 
     # Construct the dap class
     TDS = GetDAP(gridfile=gridfile,**oceandict)
