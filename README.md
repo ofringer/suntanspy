@@ -1,7 +1,7 @@
 Sunpy
 =====
 
-A suite of python tools for pre- and post-processing numerical model data. Specifically designed for use with the [SUNTANS model](https://github.com/jadelson/suntans).
+A suite of python tools for pre- and post-processing numerical model data. Specifically designed for use with the [SUNTANS model](https://github.com/ofringer/suntans).
 
 The python files are organized into the following directories based on their general usage:
 
