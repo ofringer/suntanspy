@@ -328,6 +328,7 @@ class Inputs(object):
     utmzone=15
     isnorth=True
     vdatum = 'MSL'
+    shapefieldname='contour'
      
     def __init__(self,infile,**kwargs):
     
@@ -343,7 +344,7 @@ class Inputs(object):
             LL,self.Zin = read_xyz(self.infile)
             self.Zin = np.ravel(self.Zin)
         elif self.infile[-3:]=='shp':
-            LL,self.Zin = readShpBathy(self.infile,FIELDNAME='contour')
+            LL,self.Zin = readShpBathy(self.infile,FIELDNAME=self.shapefieldname)
         elif self.infile[-3:]=='.nc':
             self.loadnc()
             LL = self._returnXY(self.xgrd,self.ygrd)

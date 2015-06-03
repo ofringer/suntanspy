@@ -45,6 +45,7 @@ class DepthDriver(object):
     utmzone=15
     isnorth=True
     vdatum = 'MSL'
+    shapefieldname='contour'
     
     # Smoothing options
     smooth=False
@@ -56,8 +57,10 @@ class DepthDriver(object):
         self.__dict__.update(kwargs)
         
         # Parse the depth data into an object
-        self.indata = Inputs(depthfile,convert2utm=self.convert2utm,CS=self.CS,utmzone=self.utmzone,\
-        isnorth=self.isnorth,vdatum=self.vdatum)
+        self.indata = Inputs(depthfile,convert2utm=self.convert2utm,\
+            CS=self.CS,utmzone=self.utmzone,\
+            isnorth=self.isnorth,vdatum=self.vdatum,\
+            shapefieldname=self.shapefieldname)
 
 
     def __call__(self,suntanspath,depthmax=0.0,scalefac=-1.0, interpnodes=True):

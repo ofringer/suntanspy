@@ -403,9 +403,15 @@ def narr2suntans(outfile,tstart,tend,bbox,utmzone):
     narr=getNARR(tstart,tend,bbox)
     
     #Lookup table that matches variables to name in NARR file
-    varlookup={'Uwind':'u_wind_height_above_ground', 'Vwind':'v_wind_height_above_ground',\
-    'Tair':'Temperature_height_above_ground','Pair':'Pressure_reduced_to_MSL',\
-    'RH':'Relative_humidity','cloud':'Total_cloud_cover','rain':'Precipitation_rate'}
+    varlookup={\
+        'Uwind':'u_wind_height_above_ground',\
+        'Vwind':'v_wind_height_above_ground',\
+        'Tair':'Temperature_height_above_ground',\
+        'Pair':'Pressure_reduced_to_MSL',\
+        'RH':'Relative_humidity',\
+        'cloud':'Total_cloud_cover',\
+        'rain':'Precipitation_rate',\
+    }
     
     # Set some meta variables
     Nc = narr.nx*narr.ny

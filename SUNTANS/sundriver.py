@@ -56,6 +56,8 @@ class sundriver(object):
     depthmax=0.1
     interpmethod='idw' # Interpolation method:  'nn', 'idw', 'kriging', 'griddata'
     plottype='mpl' # Type of plot: 'mpl', 'vtk2' or 'vtk3'
+    shapefieldname='contour' # name of shapefile attribute with contour data
+    scalefac = 1.0
     
     # Interpolation options
     NNear=3
@@ -206,9 +208,11 @@ class sundriver(object):
             plottype=self.plottype,NNear=self.NNear,\
             p=self.p,varmodel=self.varmodel,nugget=self.nugget,sill=self.sill,vrange=self.vrange,\
             convert2utm=self.convert2utm,utmzone=self.utmzone,isnorth=self.isnorth,vdatum=self.vdatum,\
+            shapefieldname=self.shapefieldname,\
             smooth=self.smooth,smoothmethod=self.smoothmethod,smoothnear=self.smoothnear)
             
-            D(self.suntanspath,depthmax=self.depthmax,interpnodes=self.interpnodes)
+            D(self.suntanspath,depthmax=self.depthmax,interpnodes=self.interpnodes,\
+                scalefac=self.scalefac)
             
             self.grd = D.grd
 

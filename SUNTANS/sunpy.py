@@ -410,7 +410,8 @@ class Grid(object):
         plt.hist(self.dg[ind],bins=100,log=False)
         textstr='Min = %3.1f m\nMean = %3.1f m\nMedian = %3.1f m\nMax = %3.1f m'%\
            (np.min(self.dg[ind]),np.mean(self.dg[ind]),np.median(self.dg[ind]),np.max(self.dg[ind]))
-        textstr += '\nNc = %d\nNp = %d\nNe = %d\n'%(self.Nc,self.Np,self.Ne)
+        textstr += '\nNc = %d\nNp = %d\nNe = %d\nmaxfaces = %d'\
+            %(self.Nc,self.Np,self.Ne,self.maxfaces)
         plt.text(0.7,0.6,textstr,transform=ax.transAxes)
         plt.xlabel('dg [m]')
         plt.ylabel('Edge Count')

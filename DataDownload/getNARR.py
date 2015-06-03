@@ -104,6 +104,16 @@ class getNARR(object):
         """
         Downloads the variable data using the pydap library
         """
+        def _loaddapvar(vv,y1,y2,x1,x2,tt,ndim):
+           # get the height coordinate for 4D arrays
+            if ndim == 4:
+                 # dimension order [time, z, y, x]
+                data = nc[vv][:,0,y1:y2,x1:x2]
+            elif ndim == 3:
+                data = nc[vv][:,y1:y2,x1:x2]
+
+            return data
+  
         
         data={}
         dims={}
@@ -126,13 +136,22 @@ class getNARR(object):
             for vv in varnames:
                 print vv
                 self.ndim  = dims[vv]
-                # get the height coordinate for 4D arrays
-                if self.ndim == 4:
-                     # dimension order [time, z, y, x]
-                    data[vv][tt,:,:] = nc[vv][:,0,self.y1:self.y2,self.x1:self.x2]
-                elif self.ndim == 3:
-                    data[vv][tt,:,:] = nc[vv][:,self.y1:self.y2,self.x1:self.x2]
-                   
+                  
+                MAXTRY=0
+                try:
+                    data[vv][tt,:,:] = _loaddapvar(vv, self.y1, self.y2,\
+                        self.x1, self.x2, tt, self.ndim)
+                    MAXTRY=0
+                except:
+                    print "Warning: loaddap failed on attempt %d, retrying..."%MAXTRY
+
+                    MAXTRY+=1
+                    data[vv][tt,:,:] = _loaddapvar(vv, self.y1, self.y2,\
+                        self.x1, self.x2, tt, self.ndim)
+
+                    if MAXTRY==10:
+                        raise Exception, 'Loaddap connection failed.'
+
         
         return data
         
@@ -150,7 +169,7 @@ class getNARR(object):
              # dimension order [time, z, y, x]
             self.z = nc.variables[self.dimdata[1]][0]
         else:
-            self.z=0.0
+            self.z = 2.0
     
     def getArraySize(self):
         
