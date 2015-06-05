@@ -1366,9 +1366,16 @@ def GridParticles(grdfile,dx,dy,nz,xypoly=None,splitvec=1):
     # Load a trisearch object    
     tri = GridSearch(sun.xp,sun.yp,sun.cells,nfaces=sun.nfaces,verbose=False)
     
+    if xypoly == None:
+        xlims = [sun.xlims[0],sun.xlims[1]]
+        ylims = [sun.ylims[0],sun.ylims[1]]
+    else:
+        xlims = [xypoly[:,0].min(),xypoly[:,0].max()]
+        ylims = [xypoly[:,1].min(),xypoly[:,1].max()]
+
     # Construct a 2D mesh of particles
-    x = np.arange(sun.xlims[0],sun.xlims[1],dx)
-    y = np.arange(sun.ylims[0],sun.ylims[1],dy)
+    x = np.arange(xlims[0],xlims[1],dx)
+    y = np.arange(ylims[0],ylims[1],dy)
     
     X,Y = np.meshgrid(x,y)
     
@@ -1380,9 +1387,8 @@ def GridParticles(grdfile,dx,dy,nz,xypoly=None,splitvec=1):
 
     # Check which particles are also inside of the polygon
     if not xypoly == None:
-	#inpoly = nxutils.points_inside_poly(np.vstack((X,Y)).T,xypoly)
-	inpoly = inpolygon(np.vstack((X,Y)).T,xypoly)
-	mask = operator.and_(mask,inpoly)
+        inpoly = inpolygon(np.vstack((X,Y)).T,xypoly)
+        mask = operator.and_(mask,inpoly)
 
     xout = X[mask]
     yout = Y[mask]
