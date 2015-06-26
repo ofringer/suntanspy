@@ -491,7 +491,10 @@ class Grid(object):
         if len(depths) != self.Nc:
             print 'Error - number of points in depth file (%d) does not match Nc (%d)'%(len(depths),self.Nc)
         else:
-            self.dv=depths[:,2]
+            dv=depths[:,2]
+
+        self.dv = dv
+        return dv
     
     def saveVertspace(self,filename):
         """
@@ -1378,9 +1381,75 @@ class Spatial(Grid):
 
             #vname.append('PEanom')
         return vname
+
+    def build_tri(self):
+        """
+        Create a matplotlib triangulation object from the grid
+        
+        Used primarily to contour the data       
+        """
+        if not self.__dict__.has_key('_tri'):
+            if self.maxfaces==3:
+                self._tri =tri.Triangulation(self.xp,self.yp,self.cells)
+            else:
+
+                # Need to compute a delaunay triangulation for mixed meshes
+                print 'Computing delaunay triangulation and computing mask...'
+                pts = np.vstack([self.xp,self.yp]).T
+                D = spatial.Delaunay(pts)
+                self._tri =tri.Triangulation(self.xp,self.yp,D.simplices)
+
+                # Compute a mask by removing triangles outside of the polygon
+                xy = D.points
+                cells=D.simplices
+                xv,yv = circumcenter(xy[cells[:,0],0],xy[cells[:,0],1],\
+                    xy[cells[:,1],0],xy[cells[:,1],1],xy[cells[:,2],0],xy[cells[:,2],1])
+                mask = self.find_cell(xv,yv)
+                self._tri.set_mask(mask==-1)
+
+    def build_tri_voronoi(self):
+        """
+        Create a matplotlib triangulation object from the grid voronoi points
+        
+        Used primarily to contour the data       
+        """
+        if not self.__dict__.has_key('_triv'):
+            # Need to compute a delaunay triangulation for mixed meshes
+            print 'Computing delaunay triangulation and computing mask...'
+            pts = np.vstack([self.xv,self.yv]).T
+            D = spatial.Delaunay(pts)
+            self._triv =tri.Triangulation(self.xv,self.yv,D.simplices)
+
+            # Compute a mask by removing triangles outside of the polygon
+            xy = D.points
+            cells=D.simplices
+            xv,yv = circumcenter(xy[cells[:,0],0],xy[cells[:,0],1],\
+                xy[cells[:,1],0],xy[cells[:,1],1],xy[cells[:,2],0],xy[cells[:,2],1])
+            mask = self.find_cell(xv,yv)
+            self._triv.set_mask(mask==-1)
+
+
+
+    def interpolate(self, z, x, y,  kind='linear'):
+        """
+        Interpolate data in 'z' on current grid onto points 'x' and 'y'
+
+        kind = 'linear' or 'cubic'
+        """
+        self.build_tri_voronoi()
+
+        if kind == 'linear':
+            F = tri.LinearTriInterpolator(self._triv, z)
+        elif kind == 'cubic':
+            F = tri.CubicTriInterpolator(self._triv, z)
+
+        return F(x, y)
+        
+
  
     
-    def plot(self,z=None,xlims=None,ylims=None,titlestr=None,vector_overlay=False,scale=1e-4,subsample=10,**kwargs):
+    def plot(self,z=None, xlims=None, ylims=None, titlestr=None,
+        vector_overlay=False, scale=1e-4, subsample=10, **kwargs):
         """
           Plot the unstructured grid data
         """
@@ -1470,26 +1539,9 @@ class Spatial(Grid):
             xlims=self.xlims 
             ylims=self.ylims
         
-        # Create a matplotlib triangulation to contour the data       
-        if not self.__dict__.has_key('_tri'):
-            if self.maxfaces==3:
-                self._tri =tri.Triangulation(self.xp,self.yp,self.cells)
-            else:
-
-                # Need to compute a delaunay triangulation for mixed meshes
-                print 'Computing delaunay triangulation and computing mask...'
-                pts = np.vstack([self.xp,self.yp]).T
-                D = spatial.Delaunay(pts)
-                self._tri =tri.Triangulation(self.xp,self.yp,D.simplices)
-
-                # Compute a mask by removing triangles outside of the polygon
-                xy = D.points
-                cells=D.simplices
-                xv,yv = circumcenter(xy[cells[:,0],0],xy[cells[:,0],1],\
-                    xy[cells[:,1],0],xy[cells[:,1],1],xy[cells[:,2],0],xy[cells[:,2],1])
-                mask = self.find_cell(xv,yv)
-                self._tri.set_mask(mask==-1)
-        
+        # Build the triangulation object
+        self.build_tri()
+       
         # Filled contour of amplitude
         fig = plt.gcf()
         ax = fig.gca()
