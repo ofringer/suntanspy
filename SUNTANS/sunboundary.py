@@ -623,7 +623,7 @@ class Boundary(object):
                 F3d = Interp4D(xy[:,0],xy[:,1],None,nc2d.time,\
                     self.xv,self.yv,None,self.time,mask=mask2d,**self.interpdict)
                 sshnew = F3d(ssh)
-                self.h[:] = sshnew
+                self.h[:] += sshnew
 
         # Type 2 cells : no free-surface
         if self.N2>0:

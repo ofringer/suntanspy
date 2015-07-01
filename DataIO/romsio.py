@@ -460,9 +460,10 @@ class ROMS(ROMSGrid):
         
         return np.sum(dz*var,axis=0) / h
         
-    def areaInt(self,var,grid='rho'):
+    def get_dxdy(self,grid):
+
         """
-        Calculate the area integral of var
+        Calculate the x and y spacing of a variable
         """
         if grid == 'rho':
             dx = 1.0/self.pm
@@ -474,9 +475,27 @@ class ROMS(ROMSGrid):
             dx = 1.0/(0.5 * (self.pm[:,1:] + self.pm[:,0:-1]))
             dy = 1.0/(0.5 * (self.pn[:,1:] + self.pn[:,0:-1]))
         elif grid == 'v':
-            dx = 0.5 * (self.pm[1:,:] + self.pm[0:-1,:])
-            dy = 0.5 * (self.pn[1:,:] + self.pn[0:-1,:])
-            
+            dx = 1.0/(0.5 * (self.pm[1:,:] + self.pm[0:-1,:]))
+            dy = 1.0/(0.5 * (self.pn[1:,:] + self.pn[0:-1,:]))
+
+        return dx, dy
+
+    def gradH(self, phi, grid='rho'):
+        """
+        Compute the horizontal gradient of a variable
+        """
+        dx, dy = self.get_dxdy(grid)
+
+        dphi_y, dphi_x = np.gradient(phi)
+
+        return dphi_x/dx, dphi_y/dy
+
+    def areaInt(self,var,grid='rho'):
+        """
+        Calculate the area integral of var
+        """
+        dx, dy = self.get_dxdy(grid)
+           
         A = dx*dy
         return np.sum(var*A)
         
@@ -508,6 +527,17 @@ class ROMS(ROMSGrid):
         dv_dz[-1,...] = (var[-1,...] - var[-2,...]) / dz[-1,...]
         
         return dv_dz
+
+    def vorticity(self, u, v):
+        """
+        Calculate the horizontal vorticity field 
+        """
+
+        dudx, dudy = self.gradH(u, grid='u')
+        dvdx, dvdy = self.gradH(v, grid='v')
+
+        return   0.5*( dvdx[:,1:] + dvdx[:,0:-1]) - \
+            0.5*( dudy[1:,:] + dudy[0:-1,:]) 
 
     def MLD(self,tstep,thresh=-0.006,z_max=-20.0):
         """

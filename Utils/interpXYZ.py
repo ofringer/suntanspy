@@ -387,19 +387,26 @@ class Inputs(object):
 
         # This could be made more generic...
         if self.convert2utm:
-            xvar = 'lon'
-            yvar = 'lat'
+            try:
+                xvar = 'lon'
+                yvar = 'lat'
+                self.xgrd = nc.variables[xvar][:]
+            except:
+                xvar = 'longitude'
+                yvar = 'latitude'
+                self.xgrd = nc.variables[xvar][:]
+
         else:
             xvar = 'x'
             yvar = 'y'
         
         try:
             self.xgrd = nc.variables[xvar][:]
-            self.ygrd = nc.variables[xvar][:]
+            self.ygrd = nc.variables[yvar][:]
             self.Zin = nc.variables['topo'][:]
         except:
             self.xgrd = nc.variables[xvar][:]
-            self.ygrd = nc.variables[xvar][:]
+            self.ygrd = nc.variables[yvar][:]
             self.Zin = nc.variables['z'][:]
                 
         nc.close()
