@@ -671,12 +671,13 @@ class ModVsObs(object):
         ax.set_aspect('equal')
         plt.xlim(ylims)
         plt.ylim(ylims)
-        ax.autoscale(tight=True)
+        #ax.autoscale(tight=True)
         plt.grid(b=True)
 
         if printstats:
-            textstr = '$r^2$ = %6.2f\nRMSE = %6.2f\n'%(self.cc,self.rmse)
-            plt.text(0.05,0.65,textstr,transform=ax.transAxes)
+            textstr = '$r^2$ = %6.2f\nRMSE = %6.2f\nBias = %6.2f\n'%(\
+                self.cc.mean(),self.rmse.mean(),self.bias.mean())
+            plt.text(0.05,0.55,textstr,transform=ax.transAxes)
 
         return h1, ax
 
@@ -696,6 +697,9 @@ class ModVsObs(object):
 
         # RMSE
         self.rmse = rms(self.TSobs.y-self.TSmod.y,axis=-1)
+        
+        # bian
+        self.bias = np.mean(self.TSmod.y - self.TSobs.y, axis=1)
 
         # skill
         self.skill = 1.0 - ((self.TSobs.y-self.TSmod.y)**2.).sum(axis=-1) / \

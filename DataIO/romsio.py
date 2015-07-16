@@ -573,7 +573,7 @@ class ROMS(ROMSGrid):
         
         return mld
 
-    def MLDmask(self,mld,z=None,grid='rho'):
+    def MLDmask(self,mld,zeta=0.0,grid='rho'):
         """
         Compute a 3D mask for variables beneath the mixed layer
         """
@@ -589,15 +589,19 @@ class ROMS(ROMSGrid):
             h = 0.5 * (self.h[1:,:] + self.h[0:-1,:])
             mld = 0.5 * (mld[1:,:] + mld[0:-1,:])
             
-        if z == None:
-            z = get_depth(self.s_rho,self.Cs_r,self.hc,h,Vtransform=self.Vtransform).squeeze()
+        #if z == None:
+        z = -get_depth(self.s_rho,self.Cs_r,self.hc,h,\
+            zeta=zeta, Vtransform=self.Vtransform).squeeze()
         
-        mask = np.zeros(z.shape)
-        for jj in range(mld.shape[0]):
-            for ii in range(mld.shape[1]):
-                ind = z[:,jj,ii] >= mld[jj,ii]
-                if mld[jj,ii]>=0.:
-                    mask[ind,jj,ii]=1.0
+        mask = np.zeros((z.shape[0],)+mld.shape,np.bool)
+        for kk in range(0,z.shape[0]):
+            mask[kk,...] = z[kk,...] >= mld
+        #for jj in range(mld.shape[0]):
+        #    for ii in range(mld.shape[1]):
+        #        #ind = z[:,jj,ii] >= mld[jj,ii]
+        #        ind = z[:,jj,ii] > mld[jj,ii]
+        #        if mld[jj,ii]>=0.:
+        #            mask[ind,jj,ii]=1.0
         
         return mask
         

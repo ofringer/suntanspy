@@ -16,6 +16,18 @@ import numpy as np
 import operator
 import pdb
 
+# Global Coefficients
+Ce = 1.10e-3 # Dalton number
+Ch = 1.10e-3 # Stanton number
+
+Le = 2.5e6
+cp = 4.2e3
+rhoa = 1.20
+rho0 = 1024.0
+
+r_LW = 0.04
+ 
+
 def mixedlayer(T,z,h0=-10,Tthresh=0.4,axis=0):
     """
     Compute the mixed layer depth using the temperature threshold method.
@@ -37,6 +49,42 @@ def mixedlayer(T,z,h0=-10,Tthresh=0.4,axis=0):
         mld[ii] = F(T0[ii]-Tthresh)
 
     return mld
+
+
+def oceanheat(T, z, T0=26.0):
+    """
+    Compute the ocean heat content relative to temperature T0
+
+    Inputs:
+        T - array of temperature values
+        z - vector or array
+    """
+    from scipy.interpolate import interp1d
+    # Find the depth of the 26 C isotherm
+    sz = T.shape[-1]
+    h26 = np.zeros((sz,))
+    for ii in range(sz):
+        F = interp1d(T[:,ii],z,bounds_error=False,fill_value=z[0])
+        h26[ii] = F(T0)
+
+
+    # Integrate downwards to get the ocean heat content
+    ohc = np.zeros((sz,))
+    idx = np.searchsorted(z,h26)
+    for ii in range(sz):
+        ztmp = z*1
+        Ttmp = T[:,ii]
+        ztmp[0:idx[ii]]=0.
+        Ttmp[0:idx[ii]]=0.
+        if idx[ii]>0:
+            ztmp[idx[ii]-1] = h26[ii]
+            Ttmp[idx[ii]-1] = T0
+
+        Ttmp -= T0
+        ohc[ii] = cp*rho0*np.trapz(-ztmp, Ttmp)
+
+
+    return ohc
 
 def buoyancyFlux(SSS,SST,Q,EP,dz):
     """
@@ -102,16 +150,7 @@ def heatFluxes(Uwind,Vwind,Ta,Tw,Pa,RH,cloud):
         
     """
     
-    # Coefficients
-    Ce = 1.10e-3 # Dalton number
-    Ch = 1.10e-3 # Stanton number
-    
-    Le = 2.5e6
-    cp = 4.2e3
-    rhoa = 1.20
-    
-    r_LW = 0.04
-    
+   
     # Compute wind speed
     S = np.sqrt(Uwind**2+Vwind**2)
     

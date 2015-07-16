@@ -90,6 +90,7 @@ def rotary_spectra(tsec,u,v,K=3,power=2.):
         
     omega = np.fft.fftfreq(int(M),d=dt/(2*np.pi))
     
+    #domega = 2*np.pi/(M*dt)
     domega = 1/(M*dt)
     
     # Extract the clockwise and counter-clockwise component
@@ -97,7 +98,7 @@ def rotary_spectra(tsec,u,v,K=3,power=2.):
     omega_cw = omega[M_2::] # negative frequencies
     S_ccw = S[...,0:M_2]
     S_cw = S[...,M_2::]
-    
+
     return omega_cw,omega_ccw,S_cw,S_ccw,domega
 
 def integrate_rotspec(omega_cw,omega_ccw,S_cw,S_ccw,domega,omega_low=None,omega_high=None):
@@ -125,7 +126,13 @@ def integrate_rotspec(omega_cw,omega_ccw,S_cw,S_ccw,domega,omega_low=None,omega_
     # Integrate under the spectrum to get the kinetic energy
     KE_ccw = 0.5*np.sum(S_ccw[...,t0_ccw:t1_ccw]*domega,axis=-1)
     KE_cw = 0.5*np.sum(S_cw[...,t0_cw:t1_cw]*domega,axis=-1)
-    
+
+    #twopi = 2*np.pi
+    #KE_ccw = 0.5/twopi*np.trapz(S_ccw[...,t0_ccw:t1_ccw],\
+    #    x=omega_ccw[t0_ccw:t1_ccw],axis=-1)
+    #KE_cw = 0.5/twopi*np.trapz(S_cw[...,t0_cw:t1_cw],\
+    #    x=omega_cw[t0_cw:t1_cw],axis=-1)
+
     return KE_ccw, KE_cw
  
 def eofsvd(M):
