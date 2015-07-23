@@ -1,5 +1,5 @@
 site_name: suntanspy
-docs_dir: src/
+docs_dir: docs/
 pages:
 - Home: 'index.md'
 - 'SUNTANS':
