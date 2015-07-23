@@ -1,0 +1,21 @@
+site_name: suntanspy
+docs_dir: src/
+pages:
+- Home: 'index.md'
+- 'SUNTANS':
+   - 'Grid Generation' : 'gridgeneration.md'
+   - 'Bathymetry': 'bathymetry.md'
+   - 'Initial conditions': 'initialconditions.md'
+   - 'Open boundary conditions': 'boundaryconditions.md'
+   - 'Atmospheric forcing': 'metdata.md'
+   - 'Driver script examples' : 'suntansdrivers.md'
+   - 'Plotting' : 'suntansplotting.md'
+   - 'Particle Tracking' : 'particletracking.md'
+   - 'Analysis' : 'analysis.md'
+- 'Data download and management':
+   - 'Time series downloads' : 'timeseries.md'
+   - 'Using SQL to manage NetCDF data sets' : 'sqlnetcdf.md'
+   - 'Numerical model OpenDAP download' : 'opendap.md'
+
+
+theme: bootstrap
